@@ -1,0 +1,25 @@
+{
+  "hook": {
+    "title": "how to completely reinvent yourself in 6 months",
+    "subtitle": "(the glow up protocol)"
+  },
+  "value_slides": [
+    {
+      "number": 1,
+      "title": "hydration & gut health",
+      "body": "berry juice daily + greens. energy starts in the stomach. your skin will thank you within 2 weeks."
+    },
+    {
+      "number": 2,
+      "title": "dopamine detox",
+      "body": "no phone 1 hour after waking. reclaim your morning mind. this alone changed everything for me."
+    }
+  ],
+  "gatekeep": {
+    "number": 3,
+    "title": "the accountability secret",
+    "body": "i can't trust my own willpower yet, so i use this AI coach to hold me accountable every single day. it's like having a personal trainer in my pocket.",
+    "app_mention": "HabitAI"
+  },
+  "cta": "link in bio"
+}

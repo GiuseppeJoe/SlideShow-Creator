@@ -1,0 +1,17 @@
+# HabitAI - Glow Up Protocol slideshow
+# Run: python -m slideshow_creator --config examples/habitai_glow_up.yaml
+
+app_name: "HabitAI"
+app_description: "AI-powered habit tracking and accountability coach that helps you build lasting habits with personalized reminders and progress tracking"
+topic: "glow up protocol"
+aesthetic: "clean girl"
+image_mode: "generate"
+script_mode: "generate"
+output_dir: "./output/glow_up"
+filename_prefix: "glow_up"
+overlay_top_opacity: 60
+overlay_bottom_opacity: 200
+content_top: 0.30
+title_size: 72
+subtitle_size: 48
+body_size: 44

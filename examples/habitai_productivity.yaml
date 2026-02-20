@@ -1,0 +1,17 @@
+# HabitAI - Productivity Hacks slideshow
+# Run: python -m slideshow_creator --config examples/habitai_productivity.yaml
+
+app_name: "HabitAI"
+app_description: "AI-powered habit tracking and accountability coach that helps you build lasting habits with personalized reminders and progress tracking"
+topic: "productivity habits of high performers"
+aesthetic: "old money"
+image_mode: "generate"
+script_mode: "generate"
+output_dir: "./output/productivity"
+filename_prefix: "productivity"
+overlay_top_opacity: 70
+overlay_bottom_opacity: 210
+content_top: 0.28
+title_size: 70
+subtitle_size: 48
+body_size: 44

@@ -1,0 +1,17 @@
+# HabitAI - Morning Routine slideshow
+# Run: python -m slideshow_creator --config examples/habitai_morning_routine.yaml
+
+app_name: "HabitAI"
+app_description: "AI-powered habit tracking and accountability coach that helps you build lasting habits with personalized reminders and progress tracking"
+topic: "morning routine that changed my life"
+aesthetic: "that girl"
+image_mode: "generate"
+script_mode: "generate"
+output_dir: "./output/morning_routine"
+filename_prefix: "morning"
+overlay_top_opacity: 50
+overlay_bottom_opacity: 190
+content_top: 0.32
+title_size: 68
+subtitle_size: 46
+body_size: 42

@@ -1,0 +1,238 @@
+"""Gemini / Nano Banana integration for AI image generation and script writing."""
+
+import json
+import os
+import re
+from io import BytesIO
+from pathlib import Path
+
+from PIL import Image
+
+try:
+    from google import genai
+    from google.genai import types
+except ImportError:
+    genai = None
+    types = None
+
+IMAGE_MODEL = "gemini-2.5-flash-image"
+TEXT_MODEL = "gemini-2.5-flash"
+
+
+def _get_client():
+    """Create a Gemini API client."""
+    if genai is None:
+        raise ImportError(
+            "google-genai package required. Install with: pip install google-genai"
+        )
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        raise ValueError(
+            "Set GEMINI_API_KEY or GOOGLE_API_KEY environment variable. "
+            "Get a free key at https://aistudio.google.com/apikey"
+        )
+    return genai.Client(api_key=api_key)
+
+
+def generate_aesthetic_image(
+    prompt: str,
+    aspect_ratio: str = "9:16",
+    style_prefix: str = "aesthetic Pinterest-style photo, soft warm lighting, cinematic, ",
+) -> Image.Image:
+    """Generate an aesthetic image using Nano Banana (Gemini 2.5 Flash Image).
+
+    Args:
+        prompt: Description of the desired image
+        aspect_ratio: Image aspect ratio (default 9:16 for TikTok)
+        style_prefix: Prefix added to all prompts for consistent aesthetic
+
+    Returns:
+        PIL Image object
+    """
+    client = _get_client()
+
+    full_prompt = f"{style_prefix}{prompt}"
+
+    response = client.models.generate_content(
+        model=IMAGE_MODEL,
+        contents=full_prompt,
+        config=types.GenerateContentConfig(
+            response_modalities=["IMAGE"],
+            image_config=types.ImageConfig(
+                aspect_ratio=aspect_ratio,
+            ),
+        ),
+    )
+
+    for part in response.parts:
+        if part.inline_data is not None:
+            return part.as_image()
+
+    raise RuntimeError("Nano Banana did not return an image. Try a different prompt.")
+
+
+def generate_slide_images(
+    topic: str,
+    aesthetic: str = "clean girl",
+    num_slides: int = 4,
+) -> list[Image.Image]:
+    """Generate a set of aesthetic background images for a slideshow.
+
+    Each image is generated with a prompt tailored to the slide's role
+    while maintaining a cohesive aesthetic across all slides.
+
+    Args:
+        topic: The slideshow topic (e.g., "glow up", "productivity")
+        aesthetic: Visual aesthetic style (e.g., "old money", "clean girl", "that girl")
+        num_slides: Number of slides to generate
+
+    Returns:
+        List of PIL Image objects
+    """
+    # Tailored prompts for each slide position
+    slide_prompts = [
+        # Slide 1: Hook - eye-catching hero shot
+        (
+            f"{aesthetic} aesthetic, beautiful lifestyle photography, "
+            f"related to {topic}, dreamy soft focus background, "
+            "golden hour lighting, aspirational mood, no text, no people's faces"
+        ),
+        # Slide 2: Value tip 1 - supportive visual
+        (
+            f"{aesthetic} aesthetic, cozy and inviting flat lay or lifestyle scene, "
+            f"wellness and self-care vibes related to {topic}, "
+            "warm tones, soft natural lighting, no text"
+        ),
+        # Slide 3: Value tip 2 - different supportive visual
+        (
+            f"{aesthetic} aesthetic, peaceful morning routine scene, "
+            f"minimal and clean composition related to {topic}, "
+            "natural daylight, calming colors, no text"
+        ),
+        # Slide 4: Gatekeep/CTA - slightly different mood
+        (
+            f"{aesthetic} aesthetic, close-up lifestyle detail shot, "
+            f"technology and wellness blend related to {topic}, "
+            "soft bokeh background, warm golden tones, no text"
+        ),
+    ]
+
+    images = []
+    for i in range(min(num_slides, len(slide_prompts))):
+        img = generate_aesthetic_image(slide_prompts[i])
+        images.append(img)
+
+    return images
+
+
+SCRIPT_SYSTEM_PROMPT = """\
+You are an expert TikTok slideshow copywriter specializing in the "Pinterest Aesthetic Slideshow" ad format.
+
+This format disguises ads as aesthetic content. The strategy:
+- Slides 1-3 look like organic Pinterest-style tips (the "bait" and "value trap")
+- Slide 4 is the "gatekeep" frame that subtly promotes the app as a discovered secret
+
+Rules:
+- Write in lowercase, casual tone (like texting a friend)
+- Keep text SHORT - each slide text must be readable in 3-4 seconds
+- Never use "DOWNLOAD NOW" or obvious ad language
+- The app promotion on slide 4 must feel like a personal recommendation, not an ad
+- Frame the app as a "secret" or "habit" the creator personally uses
+- Use psychological framing: discovery > selling
+"""
+
+
+def generate_slideshow_script(
+    app_name: str,
+    app_description: str,
+    topic: str,
+    num_value_slides: int = 2,
+) -> dict:
+    """Use Gemini to generate the full slideshow script.
+
+    Args:
+        app_name: Name of the app to promote (e.g., "HabitAI")
+        app_description: Brief description of what the app does
+        topic: Content topic/hook theme (e.g., "glow up", "productivity")
+        num_value_slides: Number of value/tip slides (default 2)
+
+    Returns:
+        Dict with the slideshow structure:
+        {
+            "hook": {"title": "...", "subtitle": "..."},
+            "value_slides": [{"number": 1, "title": "...", "body": "..."}, ...],
+            "gatekeep": {"number": 3, "title": "...", "body": "...", "app_mention": "..."},
+            "cta": "link in bio"
+        }
+    """
+    client = _get_client()
+
+    user_prompt = f"""\
+Generate a TikTok Pinterest-style slideshow script.
+
+App: {app_name}
+App description: {app_description}
+Topic/Theme: {topic}
+Number of value slides: {num_value_slides}
+
+Return ONLY valid JSON in this exact format (no markdown, no code fences):
+{{
+    "hook": {{
+        "title": "the main hook title that makes people stop scrolling",
+        "subtitle": "optional subtitle in parentheses for extra intrigue"
+    }},
+    "value_slides": [
+        {{
+            "number": 1,
+            "title": "short punchy tip title",
+            "body": "2-3 sentences expanding on the tip. casual tone. relatable."
+        }},
+        {{
+            "number": 2,
+            "title": "another tip title",
+            "body": "2-3 sentences. keep it feeling like genuine advice."
+        }}
+    ],
+    "gatekeep": {{
+        "number": {num_value_slides + 1},
+        "title": "the secret/habit framing title",
+        "body": "personal recommendation copy that mentions {app_name} naturally as something you discovered, not an ad. make it feel like sharing a secret with a friend.",
+        "app_mention": "{app_name}"
+    }},
+    "cta": "link in bio"
+}}
+
+Important:
+- The hook title should be compelling and specific to {topic}
+- Value slides should give REAL advice (builds trust before the sell)
+- The gatekeep slide must NOT feel like an ad - it's a "secret I use"
+- All text should be lowercase casual style
+- Keep body text under 30 words per slide
+"""
+
+    response = client.models.generate_content(
+        model=TEXT_MODEL,
+        contents=user_prompt,
+        config=types.GenerateContentConfig(
+            system_instruction=SCRIPT_SYSTEM_PROMPT,
+            temperature=0.9,
+        ),
+    )
+
+    text = response.text.strip()
+
+    # Strip markdown code fences if present
+    text = re.sub(r"^```(?:json)?\s*", "", text)
+    text = re.sub(r"\s*```$", "", text)
+
+    try:
+        script = json.loads(text)
+    except json.JSONDecodeError:
+        # Try to extract JSON from the response
+        match = re.search(r"\{.*\}", text, re.DOTALL)
+        if match:
+            script = json.loads(match.group())
+        else:
+            raise ValueError(f"Failed to parse Gemini response as JSON:\n{text}")
+
+    return script
