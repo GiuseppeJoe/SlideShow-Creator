@@ -64,9 +64,9 @@ Environment variables:
     )
     parser.add_argument(
         "--image-mode",
-        choices=["generate", "unsplash", "local"],
+        choices=["generate", "unsplash", "local", "demo"],
         default="generate",
-        help="Image sourcing: 'generate' (Nano Banana AI), 'unsplash', or 'local' (default: generate)",
+        help="Image sourcing: 'generate' (Nano Banana AI), 'unsplash', 'local', or 'demo' (gradient placeholders) (default: generate)",
     )
     parser.add_argument(
         "--images",
