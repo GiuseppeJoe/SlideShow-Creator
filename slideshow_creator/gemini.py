@@ -66,7 +66,9 @@ def generate_aesthetic_image(
 
     for part in response.parts:
         if part.inline_data is not None:
-            return part.as_image()
+            # part.as_image() returns a google.genai Image wrapper, not PIL.
+            # Extract raw bytes and open with PIL directly.
+            return Image.open(BytesIO(part.inline_data.data)).convert("RGB")
 
     raise RuntimeError("Nano Banana did not return an image. Try a different prompt.")
 
