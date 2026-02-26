@@ -93,6 +93,38 @@ Environment variables:
         help="Output filename prefix (default: slide)",
     )
 
+    # Realism / de-perfecting options
+    realism_group = parser.add_argument_group("realism", "Make AI images look like real phone photos")
+    realism_group.add_argument(
+        "--no-realism",
+        action="store_true",
+        help="Disable all post-processing (keep AI images as-is)",
+    )
+    realism_group.add_argument(
+        "--grain",
+        type=float,
+        default=0.30,
+        help="Film grain intensity 0.0-1.0 (default: 0.30, 0=off)",
+    )
+    realism_group.add_argument(
+        "--vignette",
+        type=float,
+        default=0.35,
+        help="Lens vignette strength 0.0-1.0 (default: 0.35, 0=off)",
+    )
+    realism_group.add_argument(
+        "--jpeg-quality",
+        type=int,
+        default=75,
+        help="JPEG compression quality 1-100 (default: 75, 100=off)",
+    )
+    realism_group.add_argument(
+        "--lens-softness",
+        type=float,
+        default=0.4,
+        help="Lens blur radius (default: 0.4, 0=off)",
+    )
+
     args = parser.parse_args()
 
     # Build config
@@ -119,6 +151,11 @@ Environment variables:
             manual_script=manual_script,
             font_path=args.font,
             filename_prefix=args.prefix,
+            realism=not args.no_realism,
+            grain=args.grain,
+            vignette=args.vignette,
+            jpeg_quality=args.jpeg_quality,
+            lens_softness=args.lens_softness,
         )
 
     print("=" * 60)
@@ -130,6 +167,7 @@ Environment variables:
     print(f"  Images:    {config.image_mode}")
     print(f"  Script:    {config.script_mode}")
     print(f"  Output:    {config.output_dir}")
+    print(f"  Realism:   {'ON' if config.realism else 'OFF'}" + (f" (grain={config.grain}, vignette={config.vignette})" if config.realism else ""))
     print("=" * 60)
     print()
 

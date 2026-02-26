@@ -37,7 +37,10 @@ def _get_client():
 def generate_aesthetic_image(
     prompt: str,
     aspect_ratio: str = "9:16",
-    style_prefix: str = "aesthetic Pinterest-style photo, soft warm lighting, cinematic, ",
+    style_prefix: str = (
+        "candid iPhone photo, slightly imperfect casual photography, "
+        "Pinterest aesthetic repost, natural unposed look, "
+    ),
 ) -> Image.Image:
     """Generate an aesthetic image using Nano Banana (Gemini 2.5 Flash Image).
 
@@ -91,31 +94,38 @@ def generate_slide_images(
     Returns:
         List of PIL Image objects
     """
-    # Tailored prompts for each slide position
+    # Candid phone-quality prompts — NOT studio perfection.
+    # These read like real photos someone saved from Pinterest.
+    candid = (
+        "shot on iPhone, casual unposed photography, slightly imperfect framing, "
+        "natural indoor or outdoor lighting with visible ambient color cast, "
+        "NOT a studio photo, NOT AI-looking, NOT perfectly symmetrical, "
+    )
+
     slide_prompts = [
-        # Slide 1: Hook - eye-catching hero shot
+        # Slide 1: Hook - aspirational but real
         (
-            f"{aesthetic} aesthetic, beautiful lifestyle photography, "
-            f"related to {topic}, dreamy soft focus background, "
-            "golden hour lighting, aspirational mood, no text, no people's faces"
+            f"{candid}{aesthetic} aesthetic, lifestyle moment related to {topic}, "
+            "golden hour or window light, slightly off-center composition, "
+            "background has natural depth of field blur, no text, no faces"
         ),
-        # Slide 2: Value tip 1 - supportive visual
+        # Slide 2: Value tip 1 - casual flat lay or scene
         (
-            f"{aesthetic} aesthetic, cozy and inviting flat lay or lifestyle scene, "
-            f"wellness and self-care vibes related to {topic}, "
-            "warm tones, soft natural lighting, no text"
+            f"{candid}{aesthetic} aesthetic, cozy flat lay or candid scene, "
+            f"wellness vibes related to {topic}, "
+            "slightly messy or lived-in look, warm tones, no text"
         ),
-        # Slide 3: Value tip 2 - different supportive visual
+        # Slide 3: Value tip 2 - different casual moment
         (
-            f"{aesthetic} aesthetic, peaceful morning routine scene, "
-            f"minimal and clean composition related to {topic}, "
-            "natural daylight, calming colors, no text"
+            f"{candid}{aesthetic} aesthetic, morning routine or daily life moment, "
+            f"related to {topic}, natural daylight from a window, "
+            "casual composition like someone quickly snapped it, no text"
         ),
-        # Slide 4: Gatekeep/CTA - slightly different mood
+        # Slide 4: Gatekeep/CTA - phone screenshot vibe
         (
-            f"{aesthetic} aesthetic, close-up lifestyle detail shot, "
-            f"technology and wellness blend related to {topic}, "
-            "soft bokeh background, warm golden tones, no text"
+            f"{candid}{aesthetic} aesthetic, close-up detail shot of a lifestyle moment, "
+            f"related to {topic}, shallow depth of field, "
+            "warm ambient light, feels like a saved Pinterest pin, no text"
         ),
     ]
 

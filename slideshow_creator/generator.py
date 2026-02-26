@@ -51,6 +51,14 @@ class SlideshowConfig:
     overlay_top_opacity: int = 60
     overlay_bottom_opacity: int = 200
 
+    # Realism post-processing (de-perfect AI images)
+    realism: bool = True  # apply de-perfecting pipeline
+    grain: float = 0.30  # film grain intensity (0 = off)
+    warmth: float | None = None  # color temp shift (None = random subtle)
+    vignette: float = 0.35  # lens vignette strength (0 = off)
+    jpeg_quality: int = 75  # JPEG compression artifacts (100 = off)
+    lens_softness: float = 0.4  # corner blur (0 = off)
+
     # Layout tweaks
     content_top: float = 0.30
     title_size: int = 72
@@ -233,6 +241,25 @@ def generate_slideshow(config: SlideshowConfig) -> list[Path]:
         images = [resolve_image(p) for p in config.local_images[:num_slides]]
     else:
         raise ValueError(f"Invalid image_mode '{config.image_mode}'.")
+
+    # --- Step 2.5: De-perfect images for realism ---
+    if config.realism:
+        from .postprocess import make_realistic
+
+        print("\n  Applying realism post-processing...")
+        images = [
+            make_realistic(
+                img,
+                grain=config.grain,
+                warmth=config.warmth,
+                vignette=config.vignette,
+                jpeg_quality=config.jpeg_quality,
+                lens_softness=config.lens_softness,
+                seed=i,
+            )
+            for i, img in enumerate(images)
+        ]
+        print(f"  De-perfected {len(images)} images (grain={config.grain}, vignette={config.vignette})")
 
     # --- Step 3: Render ---
     print("\n[3/4] Rendering slides...")
